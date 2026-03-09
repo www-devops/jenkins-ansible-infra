@@ -1,0 +1,29 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/bookworm64"
+  
+  config.vm.synced_folder "../..", "/workspace"
+
+  private_net = "192.168.56."
+
+  config.vm.define "jenkins" do |j|
+    j.vm.hostname = "jenkins"
+    j.vm.network "private_network", ip: "#{private_net}10"
+
+    j.vm.provider "virtualbox" do |vb|
+      vb.name = "vm-jenkins"
+      vb.memory = 4096
+      vb.cpus = 2
+    end
+  end
+
+  config.vm.define "runtime" do |r|
+    r.vm.hostname = "runtime"
+    r.vm.network "private_network", ip: "#{private_net}11"
+
+    r.vm.provider "virtualbox" do |vb|
+      vb.name = "vm-runtime"
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+  end
+end

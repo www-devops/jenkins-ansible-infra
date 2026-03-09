@@ -1,0 +1,93 @@
+---
+- name: Create deployer user
+  user:
+    name: deployer
+    shell: /bin/bash
+    create_home: yes
+    state: present
+  become: true
+
+- name: Add deployer to docker group
+  user:
+    name: deployer
+    groups: docker
+    append: yes
+  become: true
+
+- name: Create project directory
+  file:
+    path: /opt/backend
+    state: directory
+    owner: deployer
+    group: deployer
+    mode: '0755'
+  become: true
+
+- name: Create scripts directory
+  file:
+    path: /opt/backend/scripts
+    state: directory
+    owner: deployer
+    group: deployer
+    mode: '0755'
+  become: true
+
+- name: Create docker-compose file
+  copy:
+    dest: /opt/backend/docker-compose.yml
+    owner: deployer
+    group: deployer
+    mode: '0644'
+    content: |
+      version: "3.9"
+
+      services:
+        backend:
+          image: backend:latest
+          container_name: backend
+          restart: unless-stopped
+          ports:
+            - "3000:3000"
+  become: true
+
+- name: Create deploy script
+  copy:
+    dest: /opt/backend/scripts/deploy.sh
+    owner: deployer
+    group: deployer
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+      cd /opt/backend
+      docker compose pull
+      docker compose up -d
+  become: true
+
+- name: Create restart script
+  copy:
+    dest: /opt/backend/scripts/restart.sh
+    owner: deployer
+    group: deployer
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+      cd /opt/backend
+      docker compose restart
+  become: true
+
+- name: Create update script
+  copy:
+    dest: /opt/backend/scripts/update.sh
+    owner: deployer
+    group: deployer
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+      cd /opt/backend
+      docker compose pull
+      docker compose up -d --build
+  become: true
+  

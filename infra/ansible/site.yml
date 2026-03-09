@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - common
+    - docker
+
+- hosts: runtime
+  become: true
+  roles:
+    - deploy_user
+
+- hosts: jenkins
+  become: true
+  roles:
+    - jenkins
